@@ -282,8 +282,8 @@
             text-shadow: 0 0 20px rgba(255,220,0,0.7);
             margin-top: 10px;
         }
-        @media (max-width: 768px)  { #stage { transform: scale(0.45); transform-origin: center center; } }
-        @media (max-width: 480px)  { #stage { transform: scale(0.34); transform-origin: center center; } }
+        @media (max-width: 768px)  { #stage { transform: scale(0.45); transform-origin: top center; margin-bottom: -374px; } }
+        @media (max-width: 480px)  { #stage { transform: scale(0.32); transform-origin: top center; margin-bottom: -462px; } }
 
         /* ── Chat ── */
         #chat-btn {
@@ -942,14 +942,20 @@ function drawRecFrame(){
 }
 
 function startRecording(){
-    buildRecCanvas();
-    recChunks=[];
-    var stream=recCanvas.captureStream(30);
-
-    // play song immediately — simple and reliable
+    // play song always
     var bgm=document.getElementById('bgm');
     bgm.volume=0.7;
     bgm.play().catch(function(e){ console.warn('bgm:', e); });
+
+    // skip recording on mobile — too heavy, causes lag
+    var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if(isMobile || typeof MediaRecorder === 'undefined'){
+        return;
+    }
+
+    buildRecCanvas();
+    recChunks=[];
+    var stream=recCanvas.captureStream(30);
 
     // pipe audio into recorder via fetch + AudioContext
     var audioCtx=new (window.AudioContext||window.webkitAudioContext)();
@@ -993,7 +999,11 @@ function showReplyPopup(){
 }
 
 function stopRecording(){
-    if(mediaRecorder && mediaRecorder.state!=='inactive') mediaRecorder.stop();
+    if(mediaRecorder && mediaRecorder.state!=='inactive'){
+        mediaRecorder.stop();
+    } else {
+        setTimeout(showReplyPopup, 1000);
+    }
 }
 </script>
 </body>
