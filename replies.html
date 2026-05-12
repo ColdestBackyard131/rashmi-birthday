@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Her Replies 💌</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Lora:wght@400&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Lora', serif;
+            min-height: 100vh;
+            padding: 40px 20px 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+        .star {
+            position: absolute; border-radius: 50%; background: #fff; opacity: 0;
+            animation: twinkle var(--d,4s) ease-in-out var(--dl,0s) infinite;
+        }
+        @keyframes twinkle { 0%,100%{opacity:0} 50%{opacity:var(--op,0.5)} }
+
+        .page-title {
+            font-family: 'Caveat', cursive;
+            font-size: clamp(2.2rem, 6vw, 3.8rem);
+            color: #ff6eb4;
+            text-shadow: 0 0 20px rgba(255,110,180,0.8);
+            text-align: center;
+            margin-bottom: 6px;
+            position: relative; z-index: 2;
+        }
+        .page-sub {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.35);
+            text-align: center;
+            margin-bottom: 40px;
+            letter-spacing: 0.08em;
+            position: relative; z-index: 2;
+        }
+
+        #status {
+            font-size: 0.8rem;
+            color: rgba(255,110,180,0.5);
+            margin-bottom: 20px;
+            letter-spacing: 0.1em;
+            position: relative; z-index: 2;
+        }
+
+        #replies-container {
+            width: 100%;
+            max-width: 600px;
+            position: relative; z-index: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .reply-card {
+            background: linear-gradient(135deg, rgba(255,110,180,0.07), rgba(180,60,255,0.07));
+            border: 1px solid rgba(255,110,180,0.2);
+            border-radius: 16px;
+            padding: 22px 24px;
+            box-shadow: 0 0 30px rgba(255,110,180,0.08);
+            animation: fadeUp 0.5s ease forwards;
+            opacity: 0;
+        }
+        @keyframes fadeUp {
+            from { opacity:0; transform: translateY(16px); }
+            to   { opacity:1; transform: translateY(0); }
+        }
+        .reply-name {
+            font-family: 'Caveat', cursive;
+            font-size: 1.5rem;
+            color: #ffdd00;
+            text-shadow: 0 0 12px rgba(255,220,0,0.6);
+            margin-bottom: 10px;
+        }
+        .reply-msg {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: rgba(255,255,255,0.88);
+        }
+        .reply-time {
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.22);
+            margin-top: 12px;
+            letter-spacing: 0.05em;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: rgba(255,255,255,0.25);
+            font-size: 1rem;
+            margin-top: 60px;
+            line-height: 2;
+            position: relative; z-index: 2;
+        }
+        .empty-state span {
+            font-family: 'Caveat', cursive;
+            font-size: 2.5rem;
+            color: rgba(255,110,180,0.4);
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .clear-btn {
+            margin-top: 40px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.25);
+            border-radius: 50px;
+            padding: 8px 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-family: 'Lora', serif;
+            transition: all 0.2s;
+            position: relative; z-index: 2;
+        }
+        .clear-btn:hover { color: #ff6eb4; border-color: rgba(255,110,180,0.3); }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 30px;
+            font-size: 0.85rem;
+            color: rgba(255,110,180,0.5);
+            text-decoration: none;
+            letter-spacing: 0.08em;
+            position: relative; z-index: 2;
+            transition: color 0.2s;
+        }
+        .back-btn:hover { color: #ff6eb4; }
+
+        .live-dot {
+            display: inline-block;
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: #4ade80;
+            margin-right: 6px;
+            animation: pulse-dot 1.5s ease-in-out infinite;
+            vertical-align: middle;
+        }
+        @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+        /* ── Chat ── */
+        #chat-btn {
+            position: fixed; bottom: 28px; right: 28px;
+            width: 44px; height: 44px; border-radius: 50%;
+            background: linear-gradient(135deg, #ff6eb4, #c026d3);
+            border: none; cursor: pointer; font-size: 20px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 18px rgba(255,110,180,0.6);
+            z-index: 100; animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse { 0%,100%{box-shadow:0 0 18px rgba(255,110,180,0.6)} 50%{box-shadow:0 0 28px rgba(255,110,180,1)} }
+        #chat-badge {
+            position: absolute; top: -4px; right: -4px;
+            background: #ff3b3b; color: #fff; font-size: 10px;
+            width: 16px; height: 16px; border-radius: 50%;
+            display: none; align-items: center; justify-content: center;
+        }
+        #chat-badge.show { display: flex; }
+        #chat-box {
+            position: fixed; bottom: 82px; right: 28px;
+            width: 300px; height: 420px;
+            background: #0d0d0d;
+            border: 1px solid rgba(255,110,180,0.3);
+            border-radius: 18px; display: none; flex-direction: column;
+            z-index: 100; box-shadow: 0 0 40px rgba(255,110,180,0.2); overflow: hidden;
+        }
+        #chat-box.show { display: flex; }
+        #chat-header {
+            padding: 12px 16px;
+            background: linear-gradient(135deg, rgba(255,110,180,0.15), rgba(192,38,211,0.15));
+            border-bottom: 1px solid rgba(255,110,180,0.2);
+            font-family: 'Caveat', cursive; font-size: 1.1rem; color: #ff6eb4;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        #chat-close { cursor: pointer; font-size: 16px; color: rgba(255,255,255,0.4); background: none; border: none; }
+        #chat-messages {
+            flex: 1; overflow-y: auto; padding: 12px;
+            display: flex; flex-direction: column; gap: 8px;
+            scrollbar-width: thin; scrollbar-color: rgba(255,110,180,0.3) transparent;
+        }
+        .chat-msg { max-width: 80%; padding: 8px 12px; border-radius: 14px; font-size: 0.82rem; line-height: 1.4; word-break: break-word; }
+        .chat-msg.me { align-self: flex-end; background: linear-gradient(135deg,#ff6eb4,#c026d3); color:#fff; border-bottom-right-radius:4px; }
+        .chat-msg.her { align-self: flex-start; background: rgba(255,255,255,0.08); color:#fff; border-bottom-left-radius:4px; }
+        .chat-msg .who { font-size: 0.68rem; opacity: 0.6; margin-bottom: 2px; }
+        #chat-input-row { display:flex; padding:10px; gap:8px; border-top:1px solid rgba(255,110,180,0.15); }
+        #chat-input {
+            flex:1; background:rgba(255,255,255,0.06);
+            border:1px solid rgba(255,110,180,0.25); border-radius:20px;
+            padding:8px 14px; color:#fff; font-size:0.85rem; outline:none; font-family:'Lora',serif;
+        }
+        #chat-send-btn {
+            background:linear-gradient(135deg,#ff6eb4,#c026d3); border:none;
+            border-radius:50%; width:34px; height:34px; cursor:pointer; font-size:15px; color:#fff; flex-shrink:0;
+        }
+    </style>
+</head>
+<body>
+
+<div id="stars"></div>
+
+<a href="birthday.html" class="back-btn">← back to birthday page</a>
+
+<h1 class="page-title">💌 Her Replies</h1>
+<p class="page-sub">messages she wrote back for you</p>
+<p id="status"><span class="live-dot"></span>listening for new replies...</p>
+
+<div id="replies-container"></div>
+<button class="clear-btn" id="clear-btn" style="display:none">clear all replies</button>
+
+<!-- Chat Button -->
+<button id="chat-btn">
+    💬
+    <span id="chat-badge"></span>
+</button>
+<div id="chat-box">
+    <div id="chat-header">
+        <span>Chats</span>
+        <button id="chat-close">✕</button>
+    </div>
+    <div id="chat-messages"></div>
+    <div id="chat-input-row">
+        <input id="chat-input" type="text" placeholder="Reply here... 💖" maxlength="200" />
+        <button id="chat-send-btn">➤</button>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, onSnapshot, deleteDoc, getDocs, addDoc, serverTimestamp, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+// Stars
+(function(){
+    var el=document.getElementById('stars');
+    for(var i=0;i<80;i++){
+        var s=document.createElement('div');
+        s.className='star';
+        var sz=Math.random()*1.5+0.3;
+        s.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+Math.random()*100+'%;top:'+Math.random()*100+'%;--d:'+(2.5+Math.random()*5)+'s;--dl:'+(Math.random()*7)+'s;--op:'+(0.1+Math.random()*0.4);
+        el.appendChild(s);
+    }
+})();
+
+const firebaseConfig = {
+    apiKey: "AIzaSyDHmAZARCOyG30Lryh1VLcQF6duKSq4wPI",
+    authDomain: "rashmi-birthday.firebaseapp.com",
+    projectId: "rashmi-birthday",
+    storageBucket: "rashmi-birthday.firebasestorage.app",
+    messagingSenderId: "784753717316",
+    appId: "1:784753717316:web:b03c7af2118f7bb9e88c11"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const container = document.getElementById('replies-container');
+const clearBtn = document.getElementById('clear-btn');
+const status = document.getElementById('status');
+
+// Real-time listener
+const q = query(collection(db, 'replies'), orderBy('time', 'desc'));
+
+onSnapshot(q, function(snapshot){
+    container.innerHTML = '';
+
+    if(snapshot.empty){
+        container.innerHTML = '<div class="empty-state"><span>💌</span>No replies yet...<br>She hasn\'t replied yet.<br>Share the link and wait! 🌸</div>';
+        clearBtn.style.display = 'none';
+        status.innerHTML = '<span class="live-dot"></span>waiting for her reply...';
+        return;
+    }
+
+    status.innerHTML = '<span class="live-dot"></span>' + snapshot.size + ' repl' + (snapshot.size===1?'y':'ies') + ' received';
+    clearBtn.style.display = 'block';
+
+    snapshot.forEach(function(doc, i){
+        var r = doc.data();
+        var card = document.createElement('div');
+        card.className = 'reply-card';
+        card.style.animationDelay = (i * 0.08) + 's';
+
+        var timeStr = '';
+        if(r.time && r.time.toDate){
+            timeStr = r.time.toDate().toLocaleString();
+        }
+
+        card.innerHTML =
+            '<div class="reply-name">💛 ' + (r.name || 'Rashmi') + '</div>' +
+            '<div class="reply-msg">' + (r.message || '').replace(/\n/g,'<br>') + '</div>' +
+            (timeStr ? '<div class="reply-time">' + timeStr + '</div>' : '');
+        container.appendChild(card);
+    });
+}, function(err){
+    status.textContent = '⚠️ Error: ' + err.message;
+});
+
+// Clear all
+clearBtn.addEventListener('click', async function(){
+    if(!confirm('Delete all replies?')) return;
+    const snap = await getDocs(collection(db, 'replies'));
+    const dels = snap.docs.map(d => deleteDoc(d.ref));
+    await Promise.all(dels);
+});
+
+// ── Chat ──
+var chatOpen = false, chatUnread = 0;
+
+function escHtml(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+onSnapshot(collection(db,'chat'), function(snap){
+    snap.docChanges().forEach(function(change){
+        if(change.type !== 'added') return;
+        var d = change.doc.data();
+        var div = document.createElement('div');
+        // on replies.html: sender='me' is YOU (Bhushan, shown as 'me'/right), sender='her' is Rashmi (shown as 'her'/left)
+        div.className = 'chat-msg ' + (d.sender === 'me' ? 'me' : 'her');
+        div.innerHTML = '<div class="who">' + (d.sender === 'me' ? 'You 💙' : 'Rashmi 💖') + '</div>' + escHtml(d.text);
+        var msgsEl = document.getElementById('chat-messages');
+        msgsEl.appendChild(div);
+        msgsEl.scrollTop = msgsEl.scrollHeight;
+        if(!chatOpen && d.sender === 'her'){
+            chatUnread++;
+            var badge = document.getElementById('chat-badge');
+            badge.textContent = chatUnread;
+            badge.classList.add('show');
+        }
+    });
+});
+
+document.getElementById('chat-send-btn').addEventListener('click', sendMsg);
+document.getElementById('chat-input').addEventListener('keydown', function(e){ if(e.key==='Enter') sendMsg(); });
+
+function sendMsg(){
+    var input = document.getElementById('chat-input');
+    var text = input.value.trim();
+    if(!text) return;
+    input.value = '';
+    addDoc(collection(db,'chat'), { sender:'me', text:text, time:serverTimestamp() });
+}
+
+document.getElementById('chat-btn').addEventListener('click', function(){
+    chatOpen = !chatOpen;
+    document.getElementById('chat-box').classList.toggle('show', chatOpen);
+    if(chatOpen){
+        chatUnread = 0;
+        var badge = document.getElementById('chat-badge');
+        badge.textContent = '';
+        badge.classList.remove('show');
+    }
+});
+
+document.getElementById('chat-close').addEventListener('click', function(){
+    chatOpen = false;
+    document.getElementById('chat-box').classList.remove('show');
+});
+</script>
+</body>
+</html>

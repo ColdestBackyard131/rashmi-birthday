@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday Rashmi 🎂</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Lora:wght@400&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Lora', serif;
+            overflow-x: hidden;
+            overflow-y: auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 30px 20px 60px;
+        }
+
+        /* ── Stars ── */
+        #stars {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .star {
+            position: absolute;
+            border-radius: 50%;
+            background: #fff;
+            opacity: 0;
+            animation: twinkle var(--d,4s) ease-in-out var(--dl,0s) infinite;
+        }
+        @keyframes twinkle { 0%,100%{opacity:0} 50%{opacity:var(--op,0.5)} }
+
+        /* ── Header ── */
+        .hb-header {
+            text-align: center;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 10;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 1s ease, transform 1s ease;
+        }
+        .hb-header.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .hb-header .line1 {
+            font-family: 'Caveat', cursive;
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            font-weight: 700;
+            display: block;
+            color: #ff6eb4;
+            text-shadow: 0 0 18px rgba(255,110,180,0.9), 0 2px 4px rgba(0,0,0,0.8);
+            letter-spacing: 0.05em;
+        }
+        .hb-header .line2 {
+            font-family: 'Caveat', cursive;
+            font-size: clamp(2.8rem, 7vw, 4.8rem);
+            font-weight: 700;
+            display: block;
+            color: #ffdd00;
+            text-shadow: 0 0 22px rgba(255,220,0,0.95), 0 2px 4px rgba(0,0,0,0.8);
+            letter-spacing: 0.08em;
+            margin-top: -4px;
+        }
+        .hb-header .divider {
+            width: 60px;
+            height: 2px;
+            margin: 8px auto 0;
+            background: linear-gradient(90deg, transparent, #ff6eb4, #ffdd00, #ff6eb4, transparent);
+            border-radius: 2px;
+        }
+
+        /* ── Stage ── */
+        #stage {
+            position: relative;
+            width: 1100px;
+            height: 680px;
+            flex-shrink: 0;
+            z-index: 2;
+        }
+
+        /* ── Glow behind tree ── */
+        #tree-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -55%);
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,110,180,0.18) 0%, rgba(180,60,255,0.10) 50%, transparent 75%);
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 1100px; height: 680px;
+            background: transparent;
+            touch-action: none;
+            z-index: 2;
+        }
+        #canvas.hand { cursor: pointer; }
+
+        /* ── Message ── */
+        #message {
+            position: absolute;
+            left: 30px; top: 50px;
+            width: 360px;
+            font-size: 1rem;
+            line-height: 1.9;
+            color: #fff;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.9);
+            z-index: 5;
+            pointer-events: none;
+        }
+        .type-line { display: block; min-height: 1.9em; white-space: pre-wrap; }
+        .cursor {
+            display: inline-block;
+            animation: blink 0.7s step-end infinite;
+            color: #ffb3d1;
+        }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+        /* ── Final big line ── */
+        #final-line {
+            position: absolute;
+            left: 30px;
+            bottom: 80px;
+            width: 360px;
+            font-family: 'Caveat', cursive;
+            font-size: 2rem;
+            color: #ff6eb4;
+            text-shadow: 0 0 20px rgba(255,110,180,0.8), 0 0 40px rgba(255,110,180,0.4);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 1s ease, transform 1s ease;
+            pointer-events: none;
+            z-index: 5;
+        }
+        #final-line.show { opacity: 1; transform: translateY(0); }
+
+        /* ── Confetti canvas ── */
+        #confetti-canvas {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        /* ── Petals canvas ── */
+        #petals-canvas {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        .click-hint {
+            position: absolute;
+            bottom: 52px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.45);
+            opacity: 0;
+            animation: fadeIn 1.5s ease 3.5s forwards;
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 5;
+        }
+        .footer-text {
+            margin-top: 8px;
+            font-size: 11px;
+            color: rgba(255,255,255,0.28);
+            letter-spacing: 0.1em;
+            flex-shrink: 0;
+            z-index: 2;
+        }
+
+
+        /* ── Reply Popup ── */
+        #reply-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+        }
+        #reply-overlay.show { display: flex; }
+        #reply-box {
+            background: #0d0d0d;
+            border: 1px solid rgba(255,110,180,0.3);
+            border-radius: 20px;
+            padding: 36px 32px;
+            width: 90%;
+            max-width: 480px;
+            text-align: center;
+            box-shadow: 0 0 60px rgba(255,110,180,0.2);
+        }
+        #reply-box h2 {
+            font-family: 'Caveat', cursive;
+            font-size: 2rem;
+            color: #ff6eb4;
+            text-shadow: 0 0 16px rgba(255,110,180,0.7);
+            margin-bottom: 8px;
+        }
+        #reply-box p {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 20px;
+        }
+        #reply-name {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,110,180,0.3);
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            font-size: 0.95rem;
+            margin-bottom: 12px;
+            outline: none;
+        }
+        #reply-text {
+            width: 100%;
+            height: 120px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,110,180,0.3);
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            font-size: 0.95rem;
+            font-family: 'Lora', serif;
+            resize: none;
+            outline: none;
+            margin-bottom: 16px;
+        }
+        #reply-send {
+            background: linear-gradient(135deg, #ff6eb4, #c026d3);
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 32px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-family: 'Lora', serif;
+            box-shadow: 0 4px 20px rgba(255,110,180,0.4);
+            transition: transform 0.2s;
+        }
+        #reply-send:hover { transform: scale(1.05); }
+        #reply-skip {
+            display: block;
+            margin-top: 12px;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.3);
+            cursor: pointer;
+            background: none;
+            border: none;
+            text-decoration: underline;
+        }
+        #reply-thanks {
+            display: none;
+            font-family: 'Caveat', cursive;
+            font-size: 1.8rem;
+            color: #ffdd00;
+            text-shadow: 0 0 20px rgba(255,220,0,0.7);
+            margin-top: 10px;
+        }
+        @media (max-width: 768px)  { #stage { transform: scale(0.45); transform-origin: center center; } }
+        @media (max-width: 480px)  { #stage { transform: scale(0.34); transform-origin: center center; } }
+
+        /* ── Chat ── */
+        #chat-btn {
+            position: fixed; bottom: 28px; right: 28px;
+            width: 44px; height: 44px; border-radius: 50%;
+            background: linear-gradient(135deg, #ff6eb4, #c026d3);
+            border: none; cursor: pointer; font-size: 20px;
+            display: none; align-items: center; justify-content: center;
+            box-shadow: 0 0 18px rgba(255,110,180,0.6);
+            z-index: 100; animation: pulse 2s ease-in-out infinite;
+        }
+        #chat-btn.show { display: flex; }
+        @keyframes pulse { 0%,100%{box-shadow:0 0 18px rgba(255,110,180,0.6)} 50%{box-shadow:0 0 28px rgba(255,110,180,1)} }
+        #chat-badge {
+            position: absolute; top: -4px; right: -4px;
+            background: #ff3b3b; color: #fff; font-size: 10px;
+            width: 16px; height: 16px; border-radius: 50%;
+            display: none; align-items: center; justify-content: center;
+        }
+        #chat-badge.show { display: flex; }
+        #chat-box {
+            position: fixed; bottom: 82px; right: 28px;
+            width: 300px; height: 420px;
+            background: #0d0d0d;
+            border: 1px solid rgba(255,110,180,0.3);
+            border-radius: 18px; display: none; flex-direction: column;
+            z-index: 100; box-shadow: 0 0 40px rgba(255,110,180,0.2); overflow: hidden;
+        }
+        #chat-box.show { display: flex; }
+        #chat-header {
+            padding: 12px 16px;
+            background: linear-gradient(135deg, rgba(255,110,180,0.15), rgba(192,38,211,0.15));
+            border-bottom: 1px solid rgba(255,110,180,0.2);
+            font-family: 'Caveat', cursive; font-size: 1.1rem; color: #ff6eb4;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        #chat-close { cursor: pointer; font-size: 16px; color: rgba(255,255,255,0.4); background: none; border: none; }
+        #chat-messages {
+            flex: 1; overflow-y: auto; padding: 12px;
+            display: flex; flex-direction: column; gap: 8px;
+            scrollbar-width: thin; scrollbar-color: rgba(255,110,180,0.3) transparent;
+        }
+        .chat-msg { max-width: 80%; padding: 8px 12px; border-radius: 14px; font-size: 0.82rem; line-height: 1.4; word-break: break-word; }
+        .chat-msg.me { align-self: flex-end; background: linear-gradient(135deg,#ff6eb4,#c026d3); color:#fff; border-bottom-right-radius:4px; }
+        .chat-msg.her { align-self: flex-start; background: rgba(255,255,255,0.08); color:#fff; border-bottom-left-radius:4px; }
+        .chat-msg .who { font-size: 0.68rem; opacity: 0.6; margin-bottom: 2px; }
+        #chat-input-row { display:flex; padding:10px; gap:8px; border-top:1px solid rgba(255,110,180,0.15); }
+        #chat-input {
+            flex:1; background:rgba(255,255,255,0.06);
+            border:1px solid rgba(255,110,180,0.25); border-radius:20px;
+            padding:8px 14px; color:#fff; font-size:0.85rem; outline:none; font-family:'Lora',serif;
+        }
+        #chat-send-btn {
+            background:linear-gradient(135deg,#ff6eb4,#c026d3); border:none;
+            border-radius:50%; width:34px; height:34px; cursor:pointer; font-size:15px; color:#fff; flex-shrink:0;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Stars -->
+<div id="stars"></div>
+
+<!-- Confetti + Petals canvases -->
+<canvas id="confetti-canvas"></canvas>
+<canvas id="petals-canvas"></canvas>
+
+<!-- Header -->
+<div class="hb-header" id="hb-header">
+    <span class="line1">❣ Happy Birthday ❣</span>
+    <span class="line2">✨ Rashmi 🎂</span>
+    <div class="divider"></div>
+</div>
+
+<!-- Stage -->
+<div id="stage">
+    <div id="tree-glow"></div>
+    <div id="message"></div>
+    <div id="final-line"></div>
+    <canvas id="canvas" width="1100" height="680"></canvas>
+</div>
+
+<p class="click-hint">click the seed to begin</p>
+
+<!-- Chat Button -->
+<button id="chat-btn">
+    💬
+    <span id="chat-badge"></span>
+</button>
+
+<!-- Chat Box -->
+<div id="chat-box">
+    <div id="chat-header">
+        <span>Chats</span>
+        <button id="chat-close">✕</button>
+    </div>
+    <div id="chat-messages"></div>
+    <div id="chat-input-row">
+        <input id="chat-input" type="text" placeholder="Type a message... 💬" maxlength="200" />
+        <button id="chat-send-btn">➤</button>
+    </div>
+</div>
+<p class="footer-text">making sure she feels special 💖</p>
+
+<!-- Reply Popup -->
+<div id="reply-overlay">
+    <div id="reply-box">
+        <h2>🎂 Your birthday video is downloaded!</h2>
+        <p>He made this for you. Say something back 🥺</p>
+        <textarea id="reply-text" placeholder="Write your reply here... 💬"></textarea>
+        <button id="reply-send">Send Reply 💖</button>
+        <button id="reply-skip">skip for now</button>
+        <div id="reply-thanks">Sent with love 💛 He'll see it soon!</div>
+    </div>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, addDoc, serverTimestamp, onSnapshot, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDHmAZARCOyG30Lryh1VLcQF6duKSq4wPI",
+  authDomain: "rashmi-birthday.firebaseapp.com",
+  projectId: "rashmi-birthday",
+  storageBucket: "rashmi-birthday.firebasestorage.app",
+  messagingSenderId: "784753717316",
+  appId: "1:784753717316:web:b03c7af2118f7bb9e88c11"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+window._db = db;
+window._addDoc = addDoc;
+window._collection = collection;
+window._serverTimestamp = serverTimestamp;
+window._onSnapshot = onSnapshot;
+window._query = query;
+window._orderBy = orderBy;
+
+document.getElementById('reply-skip').addEventListener('click', function(){
+    document.getElementById('reply-overlay').classList.remove('show');
+});
+
+// ── Reply send (in module so db is always ready)
+document.getElementById('reply-send').addEventListener('click', function(){
+    var msg = document.getElementById('reply-text').value.trim();
+    if(!msg){ alert('Please write something \uD83D\uDE0A'); return; }
+    document.getElementById('reply-send').textContent = 'Sending...';
+    document.getElementById('reply-send').disabled = true;
+    addDoc(collection(db,'replies'),{ name:'Rashmi', message:msg, time:serverTimestamp() })
+    .then(function(){
+        addDoc(collection(db,'chat'),{ sender:'her', text:msg, time:serverTimestamp() });
+        document.getElementById('reply-text').style.display='none';
+        document.getElementById('reply-send').style.display='none';
+        document.getElementById('reply-skip').style.display='none';
+        document.getElementById('reply-thanks').style.display='block';
+        setTimeout(function(){
+            document.getElementById('reply-overlay').classList.remove('show');
+            document.getElementById('chat-btn').classList.add('show');
+        }, 2500);
+    }).catch(function(err){
+        alert('Failed: '+err.message);
+        document.getElementById('reply-send').textContent='Send Reply 💖';
+        document.getElementById('reply-send').disabled=false;
+    });
+});
+
+// ── Chat
+var chatOpen = false, chatUnread = 0;
+
+function escHtml(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function appendMsg(d){
+    var msgsEl = document.getElementById('chat-messages');
+    var div = document.createElement('div');
+    div.className = 'chat-msg ' + (d.sender === 'her' ? 'me' : 'her');
+    div.innerHTML = '<div class="who">' + (d.sender === 'her' ? 'You 💖' : 'Bhushan 💙') + '</div>' + escHtml(d.text);
+    msgsEl.appendChild(div);
+    msgsEl.scrollTop = msgsEl.scrollHeight;
+    if(!chatOpen && d.sender === 'me'){
+        chatUnread++;
+        document.getElementById('chat-badge').textContent = chatUnread;
+        document.getElementById('chat-badge').classList.add('show');
+    }
+}
+
+onSnapshot(collection(db,'chat'), function(snap){
+    snap.docChanges().forEach(function(change){
+        if(change.type === 'added') appendMsg(change.doc.data());
+    });
+});
+
+document.getElementById('chat-send-btn').addEventListener('click', function(){
+    var input = document.getElementById('chat-input');
+    var text = input.value.trim();
+    if(!text) return;
+    input.value = '';
+    addDoc(collection(db,'chat'), { sender:'her', text:text, time:serverTimestamp() });
+});
+document.getElementById('chat-input').addEventListener('keydown', function(e){
+    if(e.key==='Enter'){
+        var text = e.target.value.trim();
+        if(!text) return;
+        e.target.value = '';
+        addDoc(collection(db,'chat'), { sender:'her', text:text, time:serverTimestamp() });
+    }
+});
+
+document.getElementById('chat-btn').addEventListener('click', function(){
+    chatOpen = !chatOpen;
+    document.getElementById('chat-box').classList.toggle('show', chatOpen);
+    if(chatOpen){
+        chatUnread = 0;
+        document.getElementById('chat-badge').textContent = '';
+        document.getElementById('chat-badge').classList.remove('show');
+    }
+});
+document.getElementById('chat-close').addEventListener('click', function(){
+    chatOpen = false;
+    document.getElementById('chat-box').classList.remove('show');
+});
+</script>
+<audio id="bgm">
+    <source src="kingsarahblack-20260512-00012.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+// ── Stars ─────────────────────────────────────────────────────────────────────
+(function(){
+    var el=document.getElementById('stars');
+    for(var i=0;i<120;i++){
+        var s=document.createElement('div');
+        s.className='star';
+        var sz=Math.random()*1.8+0.3;
+        s.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+Math.random()*100+'%;top:'+Math.random()*100+'%;--d:'+(2.5+Math.random()*5)+'s;--dl:'+(Math.random()*7)+'s;--op:'+(0.1+Math.random()*0.5);
+        el.appendChild(s);
+    }
+})();
+
+// ── Tree library ──────────────────────────────────────────────────────────────
+(function(w){
+    function rnd(a,b){return a+Math.floor(Math.random()*(b-a+1));}
+    function bezier(cp,t){return cp[0].mul((1-t)*(1-t)).add(cp[1].mul(2*t*(1-t))).add(cp[2].mul(t*t));}
+    function inheart(x,y,r){var v=(x/r)*(x/r)+(y/r)*(y/r)-1;return v*v*v-(x/r)*(x/r)*(y/r)*(y/r)*(y/r)<0;}
+    function Point(x,y){this.x=x||0;this.y=y||0;}
+    Point.prototype={
+        clone:function(){return new Point(this.x,this.y);},
+        add:function(o){var p=this.clone();p.x+=o.x;p.y+=o.y;return p;},
+        sub:function(o){var p=this.clone();p.x-=o.x;p.y-=o.y;return p;},
+        div:function(n){var p=this.clone();p.x/=n;p.y/=n;return p;},
+        mul:function(n){var p=this.clone();p.x*=n;p.y*=n;return p;}
+    };
+    function Heart(){
+        var pts=[],t;
+        for(var i=10;i<30;i+=0.2){t=i/Math.PI;pts.push(new Point(16*Math.pow(Math.sin(t),3),13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t)));}
+        this.points=pts;this.length=pts.length;
+    }
+    Heart.prototype={get:function(i,s){return this.points[i].mul(s||1);}};
+    function Seed(tree,point,scale){
+        this.tree=tree;
+        this.heart={point:point,scale:scale||1,color:'#FFC0CB',figure:new Heart()};
+        this.cirle={point:point,scale:scale||1,color:'#FFC0CB',radius:5};
+    }
+    Seed.prototype={
+        draw:function(){this._dh();},
+        _dh:function(){var ctx=this.tree.ctx,h=this.heart;ctx.save();ctx.fillStyle=h.color;ctx.translate(h.point.x,h.point.y);ctx.beginPath();ctx.moveTo(0,0);for(var i=0;i<h.figure.length;i++){var p=h.figure.get(i,h.scale);ctx.lineTo(p.x,-p.y);}ctx.closePath();ctx.fill();ctx.restore();},
+        _dc:function(){var ctx=this.tree.ctx,c=this.cirle;ctx.save();ctx.fillStyle=c.color;ctx.translate(c.point.x,c.point.y);ctx.scale(c.scale,c.scale);ctx.beginPath();ctx.arc(0,0,c.radius,0,2*Math.PI);ctx.closePath();ctx.fill();ctx.restore();},
+        clear:function(){var c=this.cirle,w=26*c.scale;this.tree.ctx.clearRect(c.point.x-w,c.point.y-w,4*w,4*w);},
+        canScale:function(){return this.heart.scale>0.2;},
+        scale:function(s){this.clear();this._dc();this._dh();this.heart.scale*=s;},
+        canMove:function(){return this.cirle.point.y<this.tree.height+20;},
+        move:function(x,y){this.clear();this._dc();this.cirle.point=this.cirle.point.add(new Point(x,y));},
+        hover:function(x,y){return this.tree.ctx.getImageData(x,y,1,1).data[3]===255;}
+    };
+    function Footer(tree,w,h,spd){this.tree=tree;this.point=new Point(tree.seed.heart.point.x,tree.height-h/2);this.width=w;this.height=h;this.speed=spd||2;this.length=0;}
+    Footer.prototype={draw:function(){var ctx=this.tree.ctx,pt=this.point,len=this.length/2;ctx.save();ctx.strokeStyle='#FFF';ctx.lineWidth=this.height;ctx.lineCap='round';ctx.translate(pt.x,pt.y);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(len,0);ctx.lineTo(-len,0);ctx.stroke();ctx.restore();if(this.length<this.width)this.length+=this.speed;}};
+    function Branch(tree,p1,p2,p3,r,len,ch){this.tree=tree;this.p1=p1;this.p2=p2;this.p3=p3;this.radius=r;this.length=len||100;this.len=0;this.t=1/(this.length-1);this.children=ch||[];}
+    Branch.prototype={grow:function(){if(this.len<=this.length){var p=bezier([this.p1,this.p2,this.p3],this.len*this.t);var ctx=this.tree.ctx;ctx.save();ctx.beginPath();ctx.fillStyle='#FFC0CB';ctx.shadowBlur=2;ctx.arc(p.x,p.y,this.radius,0,2*Math.PI);ctx.closePath();ctx.fill();ctx.restore();this.len++;this.radius*=0.97;}else{this.tree.removeBranch(this);this.tree.addBranches(this.children);}}};
+    function Bloom(tree,point,figure){this.tree=tree;this.point=point;this.figure=figure;this.color='rgb(255,'+rnd(0,255)+','+rnd(0,255)+')';this.alpha=rnd(3,10)/10;this.angle=rnd(0,360);this.scale=0.1;}
+    Bloom.prototype={flower:function(){this.draw();this.scale+=0.1;if(this.scale>1)this.tree.removeBloom(this);},draw:function(){var ctx=this.tree.ctx,f=this.figure;ctx.save();ctx.fillStyle=this.color;ctx.globalAlpha=this.alpha;ctx.translate(this.point.x,this.point.y);ctx.scale(this.scale,this.scale);ctx.rotate(this.angle);ctx.beginPath();ctx.moveTo(0,0);for(var i=0;i<f.length;i++){var p=f.get(i);ctx.lineTo(p.x,-p.y);}ctx.closePath();ctx.fill();ctx.restore();}};
+    function Tree(canvas,W,H,opt){
+        this.canvas=canvas;this.ctx=canvas.getContext('2d');this.width=W;this.height=H;this.opt=opt||{};
+        var s=opt.seed||{};this.seed=new Seed(this,new Point(s.x||W/2,s.y||H/2),s.scale||1);
+        var f=opt.footer||{};this.footer=new Footer(this,f.width||W,f.height||5,f.speed||2);
+        this.branches=[];this.addBranches(opt.branch||[]);
+        var bl=opt.bloom||{},bw=bl.width||W,bh=bl.height||H,fig=this.seed.heart.figure,r=240,cache=[];
+        for(var i=0;i<(bl.num||700);i++) cache.push(this._mkBloom(bw,bh,r,fig));
+        this.bloomCache=cache;this.blooms=[];
+    }
+    Tree.prototype={
+        _mkBloom:function(w,h,r,fig){var x,y;while(true){x=Math.floor(20+Math.random()*(w-40));y=Math.floor(20+Math.random()*(h-40));if(inheart(x-w/2,h-(h-40)/2-y,r))return new Bloom(this,new Point(x,y),fig);}},
+        addBranches:function(list){for(var i=0;i<list.length;i++){var b=list[i];this.branches.push(new Branch(this,new Point(b[0],b[1]),new Point(b[2],b[3]),new Point(b[4],b[5]),b[6],b[7],b[8]));}},
+        removeBranch:function(br){var i=this.branches.indexOf(br);if(i>-1)this.branches.splice(i,1);},
+        canGrow:function(){return this.branches.length>0;},
+        grow:function(){var l=this.branches.slice();for(var i=0;i<l.length;i++)l[i].grow();},
+        addBloom:function(b){this.blooms.push(b);},
+        removeBloom:function(b){var i=this.blooms.indexOf(b);if(i>-1)this.blooms.splice(i,1);},
+        canFlower:function(){return this.bloomCache.length>0||this.blooms.length>0;},
+        flower:function(n){var batch=this.bloomCache.splice(0,n);for(var i=0;i<batch.length;i++)this.addBloom(batch[i]);var a=this.blooms.slice();for(var j=0;j<a.length;j++)a[j].flower();}
+    };
+    w.Point=Point;w.Tree=Tree;
+})(window);
+
+// ── Setup tree ────────────────────────────────────────────────────────────────
+var canvas=document.getElementById('canvas'), W=1100, H=680;
+var tree=new Tree(canvas,W,H,{
+    seed:{x:W/2-20,scale:2},
+    branch:[[535,680,570,250,500,200,30,100,[
+        [540,500,455,417,340,400,13,100,[[450,435,434,430,394,395,2,40]]],
+        [550,445,600,356,680,345,12,100,[[578,400,648,409,661,426,3,80]]],
+        [539,281,537,248,534,217,3,40],
+        [546,397,413,247,328,244,9,80,[[427,286,383,253,371,205,2,40],[498,345,435,315,395,330,4,60]]],
+        [546,357,608,252,678,221,6,100,[[590,293,646,277,648,271,2,80]]]
+    ]]],
+    bloom:{num:700,width:1080,height:650},
+    footer:{width:1200,height:5,speed:14}
+});
+tree.seed.draw();
+
+// ── Click ─────────────────────────────────────────────────────────────────────
+function tryClick(cx,cy){
+    var rect=canvas.getBoundingClientRect();
+    var x=(cx-rect.left)*(W/rect.width), y=(cy-rect.top)*(H/rect.height);
+    if(tree.seed.hover(x,y)){
+        canvas.removeEventListener('click',onCk);
+        canvas.removeEventListener('touchstart',onTch);
+        canvas.removeEventListener('mousemove',onMv);
+        document.querySelector('.click-hint').style.display='none';
+        startRecording();
+        runShrink();
+    }
+}
+function onCk(e){tryClick(e.clientX,e.clientY);}
+function onTch(e){e.preventDefault();tryClick(e.touches[0].clientX,e.touches[0].clientY);}
+function onMv(e){var rect=canvas.getBoundingClientRect();var x=(e.clientX-rect.left)*(W/rect.width),y=(e.clientY-rect.top)*(H/rect.height);canvas.className=tree.seed.hover(x,y)?'hand':'';}
+canvas.addEventListener('click',onCk);
+canvas.addEventListener('touchstart',onTch,{passive:false});
+canvas.addEventListener('mousemove',onMv);
+
+// ── Phases ────────────────────────────────────────────────────────────────────
+function runShrink(){var id=setInterval(function(){if(tree.seed.canScale()){tree.seed.scale(0.92);tree.seed.scale(0.92);tree.seed.scale(0.92);}else{clearInterval(id);runDrop();}},16);}
+function runDrop(){var id=setInterval(function(){if(tree.seed.canMove()){tree.seed.move(0,5);tree.footer.draw();}else{clearInterval(id);runGrow();}},16);}
+function runGrow(){var id=setInterval(function(){if(tree.canGrow()){tree.grow();tree.grow();tree.grow();tree.grow();}else{clearInterval(id);runBloom();}},16);}
+function runBloom(){
+    var id=setInterval(function(){
+        if(tree.canFlower()){tree.flower(16);}
+        else{
+            clearInterval(id);
+            // show glow
+            var glow=document.getElementById('tree-glow');
+            glow.style.opacity='1';
+            // show header
+            document.getElementById('hb-header').classList.add('show');
+            // confetti burst
+            startConfetti();
+            setTimeout(stopConfetti, 3500);
+            // start petals
+            startPetals();
+            // slide tree right
+            setTimeout(slideTreeRight, 400);
+        }
+    },16);
+}
+
+// ── Smooth JS slide (captured by recorder) ───────────────────────────────────
+var treeCurrentLeft = 0; // tracks current left offset in px
+
+function slideTreeRight(){
+    var startLeft = 0;
+    var endLeft = 380;
+    var duration = 900; // ms
+    var startTime = null;
+
+    function easeOutCubic(t){ return 1 - Math.pow(1-t, 3); }
+
+    function step(ts){
+        if(!startTime) startTime = ts;
+        var elapsed = ts - startTime;
+        var progress = Math.min(elapsed / duration, 1);
+        var eased = easeOutCubic(progress);
+        treeCurrentLeft = startLeft + (endLeft - startLeft) * eased;
+        canvas.style.left = treeCurrentLeft + 'px';
+
+        // also move glow
+        var glow = document.getElementById('tree-glow');
+        glow.style.left = 'calc(50% + ' + (treeCurrentLeft * 0.5) + 'px)';
+
+        if(progress < 1){
+            requestAnimationFrame(step);
+        } else {
+            treeCurrentLeft = endLeft;
+            setTimeout(startTyping, 100);
+        }
+    }
+    requestAnimationFrame(step);
+}
+
+// ── Confetti ──────────────────────────────────────────────────────────────────
+var confC=document.getElementById('confetti-canvas');
+var confCtx=confC.getContext('2d');
+var confetti=[], confRunning=false;
+confC.width=window.innerWidth; confC.height=window.innerHeight;
+
+function startConfetti(){
+    confRunning=true;
+    for(var i=0;i<180;i++){
+        confetti.push({
+            x:Math.random()*confC.width,
+            y:-10-Math.random()*200,
+            w:6+Math.random()*8,
+            h:4+Math.random()*6,
+            color:'hsl('+Math.floor(Math.random()*360)+',90%,65%)',
+            rot:Math.random()*360,
+            vx:(Math.random()-0.5)*4,
+            vy:2+Math.random()*4,
+            vr:(Math.random()-0.5)*6
+        });
+    }
+    animateConfetti();
+}
+function stopConfetti(){ confRunning=false; }
+function animateConfetti(){
+    confCtx.clearRect(0,0,confC.width,confC.height);
+    for(var i=confetti.length-1;i>=0;i--){
+        var c=confetti[i];
+        c.x+=c.vx; c.y+=c.vy; c.rot+=c.vr;
+        confCtx.save();
+        confCtx.translate(c.x,c.y);
+        confCtx.rotate(c.rot*Math.PI/180);
+        confCtx.fillStyle=c.color;
+        confCtx.fillRect(-c.w/2,-c.h/2,c.w,c.h);
+        confCtx.restore();
+        if(c.y>confC.height+20) confetti.splice(i,1);
+    }
+    if(confetti.length>0) requestAnimationFrame(animateConfetti);
+    else confCtx.clearRect(0,0,confC.width,confC.height);
+}
+
+// ── Falling Petals ────────────────────────────────────────────────────────────
+var petC=document.getElementById('petals-canvas');
+var petCtx=petC.getContext('2d');
+petC.width=window.innerWidth; petC.height=window.innerHeight;
+var petals=[], petalRunning=false;
+
+function startPetals(){
+    petalRunning=true;
+    for(var i=0;i<60;i++){
+        petals.push(makePetal());
+    }
+    animatePetals();
+    // keep spawning
+    var spawnId=setInterval(function(){
+        if(!petalRunning){clearInterval(spawnId);return;}
+        petals.push(makePetal());
+    },300);
+}
+function makePetal(){
+    return {
+        x:Math.random()*petC.width,
+        y:-20,
+        size:6+Math.random()*10,
+        color:'hsl('+(330+Math.random()*40)+',90%,'+(70+Math.random()*15)+'%)',
+        vx:(Math.random()-0.5)*1.5,
+        vy:0.8+Math.random()*1.5,
+        rot:Math.random()*360,
+        vr:(Math.random()-0.5)*3,
+        sway:Math.random()*2,
+        swayT:Math.random()*Math.PI*2
+    };
+}
+function animatePetals(){
+    petCtx.clearRect(0,0,petC.width,petC.height);
+    for(var i=petals.length-1;i>=0;i--){
+        var p=petals[i];
+        p.swayT+=0.03;
+        p.x+=p.vx+Math.sin(p.swayT)*p.sway;
+        p.y+=p.vy;
+        p.rot+=p.vr;
+        // draw heart petal
+        petCtx.save();
+        petCtx.translate(p.x,p.y);
+        petCtx.rotate(p.rot*Math.PI/180);
+        petCtx.fillStyle=p.color;
+        petCtx.globalAlpha=0.75;
+        petCtx.beginPath();
+        var s=p.size/16;
+        petCtx.scale(s,s);
+        for(var j=0;j<20;j++){
+            var t=j/Math.PI;
+            var hx=16*Math.pow(Math.sin(t),3);
+            var hy=-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t));
+            j===0?petCtx.moveTo(hx,hy):petCtx.lineTo(hx,hy);
+        }
+        petCtx.closePath();
+        petCtx.fill();
+        petCtx.restore();
+        if(p.y>petC.height+30) petals.splice(i,1);
+    }
+    if(petalRunning||petals.length>0) requestAnimationFrame(animatePetals);
+}
+
+// ── Typewriter ────────────────────────────────────────────────────────────────
+var LINES=[
+    '❤️❤️❤️ Happiest Birthday Dear Rashmi 💋',
+    'Wish you many many happy returns of the day 💙',
+    'God bless you always, Rashmi 🍀',
+    'Enjoy your day & keep smiling 😊💋',
+    'My love — stay always happy,',
+    'stay always with me ❤️🤞🏻',
+    'You bring so much joy to my heart 😘',
+    'Thankful for every moment we spend together 🙈😍',
+    'I wish our happiness never ends 💋',
+    'You make my life worth living, Rashmi 🌍',
+    'You are my everything & my lifeline 🔐😻',
+    'You are the reason behind my every smile 😚🥰',
+    'You are my HAPPINESS 💕',
+    'I LOVE YOU SOOOO MUCH SWEETHEART 💙😚',
+    'Once again — Happy Birthday Kulfi 😜🎂',
+    'Buddha bless you always ☯️❤️🤗',
+    'My family & friends send their best wishes too 🥳',
+];
+
+function startTyping(){
+    var msgEl=document.getElementById('message');
+    var lineIdx=0,charIdx=0,currentSpan=null,cursorSpan=null;
+
+    function nextLine(){
+        if(lineIdx>=LINES.length){
+            if(cursorSpan)cursorSpan.remove();
+            // auto save recording after 2s extra petals
+            setTimeout(function(){ stopRecording(); }, 2000);
+            return;
+        }
+        currentSpan=document.createElement('span');
+        currentSpan.className='type-line';
+        msgEl.appendChild(currentSpan);
+        if(cursorSpan)cursorSpan.remove();
+        cursorSpan=document.createElement('span');
+        cursorSpan.className='cursor';
+        cursorSpan.textContent='_';
+        currentSpan.appendChild(cursorSpan);
+        charIdx=0;
+        typeChar();
+    }
+    function typeChar(){
+        var line=LINES[lineIdx];
+        if(charIdx<line.length){
+            currentSpan.insertBefore(document.createTextNode(line[charIdx]),cursorSpan);
+            charIdx++;
+            setTimeout(typeChar,50+(Math.random()-0.5)*30);
+        } else {
+            lineIdx++;
+            setTimeout(nextLine,450);
+        }
+    }
+    nextLine();
+}
+// ── Recorder (auto-start on seed click, auto-save after typing) ─────────────────────
+var mediaRecorder=null, recChunks=[], recCanvas=null, recCtx=null, recRAF=null, isRecording=false;
+var RW=1920, RH=1080;
+
+function buildRecCanvas(){
+    recCanvas=document.createElement('canvas');
+    recCanvas.width=RW; recCanvas.height=RH;
+    recCtx=recCanvas.getContext('2d');
+}
+
+function drawRecFrame(){
+    if(!isRecording) return;
+    recCtx.clearRect(0,0,RW,RH);
+    recCtx.fillStyle='#000';
+    recCtx.fillRect(0,0,RW,RH);
+
+    var treeScale = RH / 680 * 0.7;
+    var treeW = 1100 * treeScale;
+    var treeH = 680 * treeScale;
+    // tree starts centered, slides right — treeCurrentLeft goes 0→380 on webpage (1100px wide)
+    // scale that offset to rec canvas width
+    var slideOffset = treeCurrentLeft * (RW / 1100);
+    var recTreeX = (RW / 2 - treeW / 2) + slideOffset;
+    var recTreeY = (RH - treeH) / 2;
+    recCtx.drawImage(canvas, recTreeX, recTreeY, treeW, treeH);
+
+    // Header — shown after bloom
+    var hdr = document.getElementById('hb-header');
+    if(hdr && hdr.classList.contains('show')){
+        recCtx.save();
+        recCtx.textAlign = 'center';
+        recCtx.fillStyle = '#ff6eb4';
+        recCtx.font = 'bold 52px Caveat,cursive';
+        recCtx.shadowColor = 'rgba(255,110,180,0.9)'; recCtx.shadowBlur = 24;
+        recCtx.fillText('❣ Happy Birthday ❣', RW/2, 60);
+        recCtx.fillStyle = '#ffdd00';
+        recCtx.font = 'bold 80px Caveat,cursive';
+        recCtx.shadowColor = 'rgba(255,220,0,0.95)'; recCtx.shadowBlur = 30;
+        recCtx.fillText('✨ Rashmi 🎂', RW/2, 150);
+        recCtx.restore();
+    }
+
+    // Message — left side
+    var msgEl = document.getElementById('message');
+    if(msgEl){
+        var lines = msgEl.querySelectorAll('.type-line');
+        if(lines.length > 0){
+            recCtx.save();
+            recCtx.textAlign = 'left';
+            recCtx.font = '26px Lora,serif';
+            recCtx.fillStyle = '#ffffff';
+            recCtx.shadowColor = 'rgba(0,0,0,0.95)'; recCtx.shadowBlur = 8;
+            for(var i = 0; i < lines.length; i++){
+                recCtx.fillText(lines[i].textContent.replace('_',''), 60, 220 + i * 42);
+            }
+            recCtx.restore();
+        }
+    }
+
+    // Petals
+    var scaleX = RW / petC.width, scaleY = RH / petC.height;
+    recCtx.save();
+    for(var i = 0; i < petals.length; i++){
+        var p = petals[i];
+        recCtx.save();
+        recCtx.translate(p.x * scaleX, p.y * scaleY);
+        recCtx.rotate(p.rot * Math.PI / 180);
+        recCtx.fillStyle = p.color;
+        recCtx.globalAlpha = 0.85;
+        recCtx.beginPath();
+        var sc = (p.size * Math.min(scaleX, scaleY) * 2) / 16;
+        recCtx.scale(sc, sc);
+        for(var j = 0; j < 20; j++){
+            var t = j / Math.PI;
+            var hx = 16 * Math.pow(Math.sin(t), 3);
+            var hy = -(13*Math.cos(t) - 5*Math.cos(2*t) - 2*Math.cos(3*t) - Math.cos(4*t));
+            j===0 ? recCtx.moveTo(hx,hy) : recCtx.lineTo(hx,hy);
+        }
+        recCtx.closePath();
+        recCtx.fill();
+        recCtx.restore();
+    }
+    recCtx.restore();
+
+    // Confetti
+    recCtx.save();
+    for(var i = 0; i < confetti.length; i++){
+        var c = confetti[i];
+        recCtx.save();
+        recCtx.translate(c.x * scaleX, c.y * scaleY);
+        recCtx.rotate(c.rot * Math.PI / 180);
+        recCtx.fillStyle = c.color;
+        recCtx.fillRect(-c.w * scaleX, -c.h * scaleY, c.w * scaleX * 2, c.h * scaleY * 2);
+        recCtx.restore();
+    }
+    recCtx.restore();
+
+    recRAF = requestAnimationFrame(drawRecFrame);
+}
+
+function startRecording(){
+    buildRecCanvas();
+    recChunks=[];
+    var stream=recCanvas.captureStream(30);
+
+    // play song immediately — simple and reliable
+    var bgm=document.getElementById('bgm');
+    bgm.volume=0.7;
+    bgm.play().catch(function(e){ console.warn('bgm:', e); });
+
+    // pipe audio into recorder via fetch + AudioContext
+    var audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    var dest=audioCtx.createMediaStreamDestination();
+    dest.stream.getAudioTracks().forEach(function(t){ stream.addTrack(t); });
+    fetch('kingsarahblack-20260512-00012.mp3')
+        .then(function(r){ return r.arrayBuffer(); })
+        .then(function(buf){ return audioCtx.decodeAudioData(buf); })
+        .then(function(decoded){
+            var src=audioCtx.createBufferSource();
+            src.buffer=decoded;
+            src.loop=false;
+            src.connect(dest);
+            src.start(0);
+        }).catch(function(e){ console.warn('fetch audio failed (no server?):', e); });
+
+    var mime = 'video/webm;codecs=vp8,opus';
+    if(!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm;codecs=vp9,opus';
+    if(!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm';
+    mediaRecorder=new MediaRecorder(stream,{mimeType:mime});
+    mediaRecorder.ondataavailable=function(e){if(e.data.size>0)recChunks.push(e.data);};
+    mediaRecorder.onstop=function(){
+        var blob=new Blob(recChunks,{type:mime});
+        var url=URL.createObjectURL(blob);
+        var a=document.createElement('a');
+        a.href=url; a.download='happy-birthday-rashmi.webm'; a.click();
+        URL.revokeObjectURL(url);
+        isRecording=false;
+        cancelAnimationFrame(recRAF);
+        // show reply popup after download
+        setTimeout(showReplyPopup, 1000);
+    };
+    isRecording=true;
+    mediaRecorder.start();
+    drawRecFrame();
+}
+
+// ── Reply Popup ────────────────────────────────────────────────────────────────────────────────
+function showReplyPopup(){
+    document.getElementById('reply-overlay').classList.add('show');
+}
+
+function stopRecording(){
+    if(mediaRecorder && mediaRecorder.state!=='inactive') mediaRecorder.stop();
+}
+</script>
+</body>
+</html>
