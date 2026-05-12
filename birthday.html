@@ -264,6 +264,60 @@
             transition: transform 0.2s;
         }
         #reply-send:hover { transform: scale(1.05); }
+        /* Mobile tip */
+        #mobile-tip {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.88);
+            z-index: 300;
+            align-items: center;
+            justify-content: center;
+        }
+        #mobile-tip.show { display: flex; }
+        #mobile-tip-box {
+            background: #0d0d0d;
+            border: 1px solid rgba(255,110,180,0.35);
+            border-radius: 20px;
+            padding: 32px 28px;
+            width: 88%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 0 60px rgba(255,110,180,0.2);
+        }
+        #mobile-tip-box h2 {
+            font-family: 'Caveat', cursive;
+            font-size: 1.8rem;
+            color: #ff6eb4;
+            margin-bottom: 10px;
+        }
+        #mobile-tip-box p {
+            font-size: 0.88rem;
+            color: rgba(255,255,255,0.6);
+            line-height: 1.7;
+            margin-bottom: 8px;
+        }
+        #mobile-tip-box .tip-step {
+            background: rgba(255,110,180,0.08);
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin: 8px 0;
+            font-size: 0.85rem;
+            color: #fff;
+            text-align: left;
+        }
+        #mobile-tip-close {
+            margin-top: 18px;
+            background: linear-gradient(135deg, #ff6eb4, #c026d3);
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            padding: 11px 28px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            font-family: 'Lora', serif;
+        }
+
         #reply-skip {
             display: block;
             margin-top: 12px;
@@ -387,6 +441,19 @@
     </div>
 </div>
 <p class="footer-text">making sure she feels special 💖</p>
+
+<!-- Mobile Tip Overlay -->
+<div id="mobile-tip">
+    <div id="mobile-tip-box">
+        <h2>📱 Save Your Birthday Video</h2>
+        <p>Your browser doesn't support direct video download.<br>Use your phone's built-in screen recorder:</p>
+        <div class="tip-step">1️⃣ Swipe down → tap <b>Screen Record</b></div>
+        <div class="tip-step">2️⃣ Come back here & tap the seed 🌱</div>
+        <div class="tip-step">3️⃣ Let the full animation play</div>
+        <div class="tip-step">4️⃣ Stop recording → video saves to gallery 🎬</div>
+        <button id="mobile-tip-close">Got it, let's go! 💖</button>
+    </div>
+</div>
 
 <!-- Reply Popup -->
 <div id="reply-overlay">
@@ -942,14 +1009,19 @@ function drawRecFrame(){
 }
 
 function startRecording(){
-    // play song always
-    var bgm=document.getElementById('bgm');
-    bgm.volume=0.7;
+    var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    // play song
+    var bgm = document.getElementById('bgm');
+    if(isMobile){
+        bgm.src = 'https://raw.githubusercontent.com/ColdestBackyard131/rashmi-birthday/main/kingsarahblack-20260512-00012.mp3';
+        bgm.load();
+    }
+    bgm.volume = 0.7;
     bgm.play().catch(function(e){ console.warn('bgm:', e); });
 
-    // skip recording on mobile — too heavy, causes lag
-    var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    if(isMobile || typeof MediaRecorder === 'undefined'){
+    if(isMobile){
+        isRecording = false;
         return;
     }
 
@@ -957,7 +1029,6 @@ function startRecording(){
     recChunks=[];
     var stream=recCanvas.captureStream(30);
 
-    // pipe audio into recorder via fetch + AudioContext
     var audioCtx=new (window.AudioContext||window.webkitAudioContext)();
     var dest=audioCtx.createMediaStreamDestination();
     dest.stream.getAudioTracks().forEach(function(t){ stream.addTrack(t); });
@@ -966,11 +1037,9 @@ function startRecording(){
         .then(function(buf){ return audioCtx.decodeAudioData(buf); })
         .then(function(decoded){
             var src=audioCtx.createBufferSource();
-            src.buffer=decoded;
-            src.loop=false;
-            src.connect(dest);
-            src.start(0);
-        }).catch(function(e){ console.warn('fetch audio failed (no server?):', e); });
+            src.buffer=decoded; src.loop=false;
+            src.connect(dest); src.start(0);
+        }).catch(function(e){ console.warn('fetch audio:', e); });
 
     var mime = 'video/webm;codecs=vp8,opus';
     if(!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm;codecs=vp9,opus';
@@ -981,16 +1050,26 @@ function startRecording(){
         var blob=new Blob(recChunks,{type:mime});
         var url=URL.createObjectURL(blob);
         var a=document.createElement('a');
-        a.href=url; a.download='happy-birthday-rashmi.webm'; a.click();
-        URL.revokeObjectURL(url);
+        a.href=url;
+        a.download='happy-birthday-rashmi.webm';
+        a.style.display='none';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 3000);
         isRecording=false;
         cancelAnimationFrame(recRAF);
-        // show reply popup after download
-        setTimeout(showReplyPopup, 1000);
+        setTimeout(showReplyPopup, 1500);
     };
     isRecording=true;
     mediaRecorder.start();
     drawRecFrame();
+}
+
+function showMobileTip(){
+    document.getElementById('mobile-tip').classList.add('show');
+    document.getElementById('mobile-tip-close').addEventListener('click', function(){
+        document.getElementById('mobile-tip').classList.remove('show');
+    });
 }
 
 // ── Reply Popup ────────────────────────────────────────────────────────────────────────────────
@@ -1002,7 +1081,15 @@ function stopRecording(){
     if(mediaRecorder && mediaRecorder.state!=='inactive'){
         mediaRecorder.stop();
     } else {
-        setTimeout(showReplyPopup, 1000);
+        // on mobile — download pre-made video from GitHub
+        var a = document.createElement('a');
+        a.href = 'https://raw.githubusercontent.com/ColdestBackyard131/rashmi-birthday/main/happy-birthday-rashmi.webm';
+        a.download = 'happy-birthday-rashmi.webm';
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function(){ document.body.removeChild(a); }, 3000);
+        setTimeout(showReplyPopup, 1500);
     }
 }
 </script>
